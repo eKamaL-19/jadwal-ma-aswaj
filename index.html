@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jadwal MA Aswaj Ambunten</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Variabel CSS untuk konsistensi warna */
+        :root {
+            --primary-color: #4f46e5; /* Indigo 600 */
+            --primary-light: #6366f1; /* Indigo 500 */
+            --primary-dark: #4338ca;  /* Indigo 700 */
+            --secondary-color: #10b981; /* Emerald 500 */
+            --dark-color: #1f2937; /* Gray 800 */
+            --light-color: #f9fafb; /* Gray 50 */
+            --gray-color: #6b7280; /* Gray 500 */
+            --background-color: #f3f4f6; /* Gray 100 */
+        }
+        /* Gaya dasar body */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background-color);
+            color: var(--dark-color);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1.5rem;
+            box-sizing: border-box;
+        }
+        /* Gaya untuk card/kontainer utama */
+        .card {
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            border: 1px solid #e5e7eb;
+        }
+        .card:hover {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+        }
+        /* Gaya untuk badge filter aktif */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.35rem 0.85rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+        .badge-primary {
+            background-color: var(--primary-light);
+            color: white;
+        }
+        .badge-secondary {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        /* Gaya Tooltip */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: help;
+        }
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: max-content;
+            max-width: 280px;
+            background-color: var(--dark-color);
+            color: #fff;
+            text-align: left;
+            border-radius: 0.5rem;
+            padding: 0.6rem;
+            position: absolute;
+            z-index: 10;
+            bottom: calc(100% + 10px);
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.875rem;
+            font-weight: normal;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            word-wrap: break-word;
+            white-space: pre-line;
+        }
+        .tooltip .tooltip-text::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: var(--dark-color) transparent transparent transparent;
+        }
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+            transform: translateX(-50%);
+        }
+        /* Animasi fade-in untuk baris tabel */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+        /* Penyesuaian responsif */
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+            .filters {
+                grid-template-columns: 1fr;
+            }
+            .filter-group {
+                width: 100% !important;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            thead {
+                display: none;
+            }
+            tr {
+                border: 1px solid #e5e7eb;
+                margin-bottom: 0.5rem;
+                border-radius: 0.5rem;
+                overflow: hidden;
+                display: block;
+                box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            }
+            td {
+                border: none;
+                border-bottom: 1px solid #f3f4f6;
+                position: relative;
+                padding-left: 48%;
+                text-align: right;
+                display: block;
+                padding-top: 0.75rem;
+                padding-bottom: 0.75rem;
+                font-size: 0.9rem;
+            }
+            td:last-child {
+                border-bottom: 0;
+            }
+            td:before {
+                position: absolute;
+                top: 0.75rem;
+                left: 1rem;
+                width: 45%;
+                padding-right: 10px;
+                white-space: nowrap;
+                text-align: left;
+                font-weight: 600;
+                color: var(--gray-color);
+                font-size: 0.85rem;
+            }
+            td:nth-of-type(1):before { content: "Hari"; }
+            td:nth-of-type(2):before { content: "Jam Ke"; }
+            td:nth-of-type(3):before { content: "Waktu"; }
+            td:nth-of-type(4):before { content: "Nama Guru"; }
+            td:nth-of-type(5):before { content: "Kelas"; }
+        }
+        /* Styling untuk merged cell */
+        .merged-cell {
+            vertical-align: middle;
+            text-align: center;
+            background-color: rgba(240, 244, 255, 0.7);
+            position: relative;
+        }
+        .merged-cell-top {
+            border-bottom: none !important;
+        }
+        .merged-cell-middle {
+            border-top: none !important;
+            border-bottom: none !important;
+        }
+        .merged-cell-bottom {
+            border-top: none !important;
+        }
+        /* Gaya untuk tabel */
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        table thead th {
+            padding: 1rem 1.5rem;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background-color: var(--primary-dark);
+            color: white;
+            text-align: left;
+            border-bottom: 2px solid var(--primary-color);
+        }
+        table tbody td {
+            padding: 1rem 1.5rem;
+            font-size: 0.9rem;
+            color: var(--dark-color);
+            border-bottom: 1px solid #e5e7eb;
+        }
+        table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        table tbody tr:hover {
+            background-color: #eff6ff;
+        }
+        /* Gaya untuk dropdown filter */
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none'%3e%3cpath d='M7 7l3-3 3 3m0 6l-3 3-3-3' stroke='%236B7280' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 1.25rem 1.25rem;
+        }
+        /* Warna latar belakang untuk setiap hari */
+        .day-senin { background-color: #e0f2fe; }
+        .day-senin:hover { background-color: #bfdbfe; }
+        .day-selasa { background-color: #d1fae5; }
+        .day-selasa:hover { background-color: #a7f3d0; }
+        .day-rabu { background-color: #fffacd; }
+        .day-rabu:hover { background-color: #fef08a; }
+        .day-kamis { background-color: #f3e8ff; }
+        .day-kamis:hover { background-color: #e9d5ff; }
+        .day-sabtu { background-color: #e0e7ff; }
+        .day-sabtu:hover { background-color: #c7d2fe; }
+        .day-ahad { background-color: #ffe4e6; }
+        .day-ahad:hover { background-color: #fecaca; }
+        /* Gaya untuk badge hari yang bisa diklik */
+        .clickable-day-badge {
+            display: inline-block;
+            padding: 0.25rem 0.6rem;
+            margin-left: 0.5rem;
+            border-radius: 9999px;
+            background-color: var(--primary-light);
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+        }
+        .clickable-day-badge:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+        .clickable-day-badge:active {
+            transform: translateY(0);
+        }
+        .clickable-day-badge.active {
+            background-color: var(--primary-dark);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Kontainer utama -->
+    <div class="w-full max-w-screen-2xl mx-auto px-4 md:px-8">
+        <!-- Header -->
+        <header class="text-center mb-10">
+            <h1 class="text-3xl md:text-5xl font-extrabold text-indigo-800 mb-3">
+                <i class="fas fa-calendar-alt mr-3"></i>Jadwal Pelajaran
+            </h1>
+            <p class="text-gray-600 text-lg md:text-xl font-medium">MA. AHLUSSUNNAH WALJAMAAH AMBUNTEN</p>
+            <p class="text-gray-500 text-lg md:text-xl font-medium">Semester Ganjil Tahun Ajaran 2025/2026</p>
+        </header>
+
+        <!-- Filters Section -->
+        <div class="card p-6 md:p-8 mb-4">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                <h2 class="text-xl font-bold text-gray-800">
+                    <i class="fas fa-filter mr-2 text-indigo-600"></i>Filter Jadwal
+                </h2>
+            </div>
+            <div class="filters flex flex-wrap items-end gap-5">
+                <div class="filter-group flex-grow">
+                    <label for="filterGuru" class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-chalkboard-teacher mr-1"></i> Guru Pengajar
+                    </label>
+                    <div class="relative">
+                        <select id="filterGuru" class="block w-full pl-4 pr-10 py-2.5 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200">
+                            <option value="">Semua Guru</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="filter-group flex-grow">
+                    <label for="filterKelas" class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-users mr-1"></i> Kelas
+                    </label>
+                    <div class="relative">
+                        <select id="filterKelas" class="block w-full pl-4 pr-10 py-2.5 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200">
+                            <option value="">Semua Kelas</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="filter-group flex-grow">
+                    <label for="filterHari" class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="far fa-calendar-alt mr-1"></i> Hari
+                    </label>
+                    <div class="relative">
+                        <select id="filterHari" class="block w-full pl-4 pr-10 py-2.5 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200">
+                            <option value="">Semua Hari</option>
+                            <option value="Senin">Senin</option>
+                            <option value="Selasa">Selasa</option>
+                            <option value="Rabu">Rabu</option>
+                            <option value="Kamis">Kamis</option>
+                            <option value="Sabtu">Sabtu</option>
+                            <option value="Ahad">Ahad</option>
+                        </select>
+                    </div>
+                </div>
+                <!-- 🔹 FILTER JAM KE DITAMBAHKAN DI SINI -->
+                <div class="filter-group flex-grow">
+                    <label for="filterJamKe" class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="far fa-clock mr-1"></i> Jam Ke
+                    </label>
+                    <div class="relative">
+                        <select id="filterJamKe" class="block w-full pl-4 pr-10 py-2.5 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200">
+                            <option value="">Semua Jam</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="filter-group flex justify-end">
+                    <button id="resetFilters" class="px-3 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors duration-200 text-sm font-medium">
+                        <i class="fas fa-sync-alt mr-1.5"></i> Reset Filter
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Schedule Summary -->
+        <div id="scheduleSummary" class="card p-2 md:p-3 mb-4 flex flex-wrap items-center justify-between gap-3 hidden">
+            <div class="flex items-center flex-wrap gap-2">
+                <span class="text-sm font-semibold text-gray-700 mr-2">Filter Aktif:</span>
+                <div id="activeFilters" class="flex flex-wrap gap-2"></div>
+            </div>
+            <div class="text-sm text-gray-600 font-medium flex items-center gap-2">
+                <span id="totalResultsText"></span>
+                <div id="dayBadgesContainer"></div>
+            </div>
+        </div>
+
+        <!-- Schedule Table -->
+        <div class="card overflow-hidden w-full">
+            <div class="overflow-x-auto">
+                <table id="scheduleTable" class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-indigo-600 text-white">
+                        <tr id="tableHeaderRow"></tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200" id="scheduleBody"></tbody>
+                </table>
+            </div>
+            <div id="noResults" class="p-8 text-center hidden">
+                <div class="mx-auto w-28 h-28 text-gray-400 mb-5">
+                    <i class="fas fa-calendar-times text-7xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-700 mb-2">Tidak ada jadwal ditemukan</h3>
+                <p class="text-gray-500 mb-6">Coba gunakan filter yang berbeda atau reset filter untuk melihat semua jadwal.</p>
+                <button id="resetFiltersBtn2" class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors duration-200 text-base font-medium">
+                    <i class="fas fa-sync-alt mr-2"></i>Reset Filter
+                </button>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-10 text-center text-sm text-gray-500">
+            <p>&copy; 2025 Jadwal Pelajaran Dibuat dengan <i class="fas fa-heart text-red-500 mx-1"></i> untuk MA. Aswaj</p>
+            <p class="mt-1">Terakhir diperbarui: <span id="lastUpdated" class="font-medium text-gray-600"></span></p>
+        </footer>
+    </div>
+
+    <script>
+        // Data jadwal pelajaran
+        const scheduleData = [
+            // Senin
+            { day: "Senin", jam_ke: "1", waktu: "07:30 - 08:10", kelas: { "X-1": "Sudarisno Pratama, S.Pd.", "X-2": "Fajar, S.Pd.I.", "XI-1": "Kreislina Dewi Wijayanti, S.Pd.", "XI-2": "Angelia Ariani Dewi, S.Pd.", "XI-3": "Musthafa Lutfi, S.Pd.I.", "XII-A.1": "Shelvi Devita Ningrum, S.Pd.", "XII-S.1": "Hasan Basuni, S.Pd.I.", "XII-S.2": "Ladim, S.Pd." } },
+            { day: "Senin", jam_ke: "2", waktu: "08:10 - 08:50", kelas: { "X-1": "Sudarisno Pratama, S.Pd.", "X-2": "Syarif Hidayatullah F., S.Pd.", "XI-1": "Kreislina Dewi Wijayanti, S.Pd.", "XI-2": "Angelia Ariani Dewi, S.Pd.", "XI-3": "Nur Eka Setiawati, S.Pd.I.", "XII-A.1": "Shelvi Devita Ningrum, S.Pd.", "XII-S.1": "Hasan Basuni, S.Pd.I.", "XII-S.2": "Ladim, S.Pd." } },
+            { day: "Senin", jam_ke: "3", waktu: "08:50 - 09:30", kelas: { "X-1": "Mastur, S.Pd.I.", "X-2": "Syarif Hidayatullah F., S.Pd.", "XI-1": "Kreislina Dewi Wijayanti, S.Pd.", "XI-2": "Nurul Istiqomah, S.Pd.", "XI-3": "Nur Eka Setiawati, S.Pd.I.", "XII-A.1": "Ladim, S.Pd.", "XII-S.1": "Mutammimah, S.Pd.", "XII-S.2": "Khoiril Bariyah, S.Pd." } },
+            { day: "Senin", jam_ke: "4", waktu: "09:30 - 10:10", kelas: { "X-1": "Mastur, S.Pd.I.", "X-2": "Kreislina Dewi Wijayanti, S.Pd.", "XI-1": "Syarif Hidayatullah F., S.Pd.", "XI-2": "Nurul Istiqomah, S.Pd.", "XI-3": "Shelvi Devita Ningrum, S.Pd.", "XII-A.1": "Ladim, S.Pd.", "XII-S.1": "Mutammimah, S.Pd.", "XII-S.2": "Khoiril Bariyah, S.Pd." } },
+            { day: "Senin", jam_ke: "5", waktu: "10:30 - 11:10", kelas: { "X-1": "Nur Eka Setiawati, S.Pd.I.", "X-2": "Kreislina Dewi Wijayanti, S.Pd.", "XI-1": "Syarif Hidayatullah F., S.Pd.", "XI-2": "Nurul Istiqomah, S.Pd.", "XI-3": "Shelvi Devita Ningrum, S.Pd.", "XII-A.1": "Musthafa Lutfi, S.Pd.I.", "XII-S.1": "Khoiril Bariyah, S.Pd.", "XII-S.2": "Angelia Ariani Dewi, S.Pd." } },
+            { day: "Senin", jam_ke: "6", waktu: "11:10 - 11:50", kelas: { "X-1": "Nur Eka Setiawati, S.Pd.I.", "X-2": "Nurul Istiqomah, S.Pd.", "XI-1": "Syarif Hidayatullah F., S.Pd.", "XI-2": "Musthafa Lutfi, S.Pd.I.", "XI-3": "Shelvi Devita Ningrum, S.Pd.", "XII-A.1": "Hasan Basuni, S.Pd.I.", "XII-S.1": "Khoiril Bariyah, S.Pd.", "XII-S.2": "Angelia Ariani Dewi, S.Pd." } },
+            { day: "Senin", jam_ke: "7", waktu: "11:50 - 12:30", kelas: { "X-1": "Moh. Nasir, S.Pd.I.", "X-2": "Nurul Istiqomah, S.Pd.", "XI-1": "Mukhlas Fuadi, S.Sos.", "XI-2": "Ahmad Fawaid Nuriyansah, S.Pd.", "XI-3": "Angelia Ariani Dewi, S.Pd.", "XII-A.1": "Hasan Basuni, S.Pd.I.", "XII-S.1": "Ladim, S.Pd.", "XII-S.2": "Kreislina Dewi Wijayanti, S.Pd." } },
+            { day: "Senin", jam_ke: "8", waktu: "12:30 - 13:10", kelas: { "X-1": "Moh. Nasir, S.Pd.I.", "X-2": "Musthafa Lutfi, S.Pd.I.", "XI-1": "Mukhlas Fuadi, S.Sos.", "XI-2": "Ahmad Fawaid Nuriyansah, S.Pd.", "XI-3": "Angelia Ariani Dewi, S.Pd.", "XII-A.1": "Razali, S.Pd.I.", "XII-S.1": "Ladim, S.Pd.", "XII-S.2": "Kreislina Dewi Wijayanti, S.Pd." } },
+            // Selasa
+            { day: "Selasa", jam_ke: "1", waktu: "07:30 - 08:10", kelas: { "X-1": "Shelvi Devita Ningrum, S.Pd.", "X-2": "Shelvi Devita Ningrum, S.Pd.", "XI-1": "Angelia Ariani Dewi, S.Pd.", "XI-2": "Hasan Basuni, S.Pd.I.", "XI-3": "Kreislina Dewi Wijayanti, S.Pd.", "XII-A.1": "Mukhlas Fuadi, S.Sos.", "XII-S.1": "Musthafa Lutfi, S.Pd.I.", "XII-S.2": "Dewi Rahmatul Fawaiz, SH" } },
+            { day: "Selasa", jam_ke: "2", waktu: "08:10 - 08:50", kelas: { "X-1": "Marzuki, S.Pd.", "X-2": "Syarif Hidayatullah F., S.Pd.", "XI-1": "Angelia Ariani Dewi, S.Pd.", "XI-2": "Hasan Basuni, S.Pd.I.", "XI-3": "Kreislina Dewi Wijayanti, S.Pd.", "XII-A.1": "Mukhlas Fuadi, S.Sos.", "XII-S.1": "Kamarudin, S.Pd.", "XII-S.2": "Dewi Rahmatul Fawaiz, SH" } },
+            { day: "Selasa", jam_ke: "3", waktu: "08:50 - 09:30", kelas: { "X-1": "Marzuki, S.Pd.", "X-2": "Syarif Hidayatullah F., S.Pd.", "XI-1": "Musthafa Lutfi, S.Pd.I.", "XI-2": "Saidi, S.Pd.I.", "XI-3": "Kreislina Dewi Wijayanti, S.Pd.", "XII-A.1": "Dewi Rahmatul Fawaiz, SH", "XII-S.1": "Kamarudin, S.Pd.", "XII-S.2": "Susi Ayu Sulistiyawati, S.Pd." } },
+            { day: "Selasa", jam_ke: "4", waktu: "09:30 - 10:10", kelas: { "X-1": "Shelvi Devita Ningrum, S.Pd.", "X-2": "Musthafa Lutfi, S.Pd.I.", "XI-1": "Mutammimah, S.Pd.", "XI-2": "Saidi, S.Pd.I.", "XI-3": "Syarif Hidayatullah F., S.Pd.", "XII-A.1": "Dewi Rahmatul Fawaiz, SH", "XII-S.1": "Susi Ayu Sulistiyawati, S.Pd.", "XII-S.2": "Susi Ayu Sulistiyawati, S.Pd." } },
+            { day: "Selasa", jam_ke: "5", waktu: "10:30 - 11:10", kelas: { "X-1": "Shelvi Devita Ningrum, S.Pd.", "X-2": "Syafaat, S.Pd.", "XI-1": "Mutammimah, S.Pd.", "XI-2": "Khoiril Bariyah, S.Pd.", "XI-3": "Syarif Hidayatullah F., S.Pd.", "XII-A.1": "Ahmad Fawaid Nuriyansah, S.Pd.", "XII-S.1": "Marzuki, S.Pd.", "XII-S.2": "Hasan Basuni, S.Pd.I." } },
+            { day: "Selasa", jam_ke: "6", waktu: "11:10 - 11:50", kelas: { "X-1": "Shelvi Devita Ningrum, S.Pd.", "X-2": "Syafaat, S.Pd.", "XI-1": "Nurul Istiqomah, S.Pd.", "XI-2": "Khoiril Bariyah, S.Pd.", "XI-3": "Syarif Hidayatullah F., S.Pd.", "XII-A.1": "Ahmad Fawaid Nuriyansah, S.Pd.", "XII-S.1": "Razali, S.Pd.I.", "XII-S.2": "Hasan Basuni, S.Pd.I." } },
+            { day: "Selasa", jam_ke: "7", waktu: "11:50 - 12:30", kelas: { "X-1": "Syafaat, S.Pd.", "X-2": "Moh. Nasir, S.Pd.I.", "XI-1": "Nurul Istiqomah, S.Pd.", "XI-2": "Khoiril Bariyah, S.Pd.", "XI-3": "Mutammimah, S.Pd.", "XII-A.1": "Kreislina Dewi Wijayanti, S.Pd.", "XII-S.1": "Angelia Ariani Dewi, S.Pd.", "XII-S.2": "Ahmad Fawaid Nuriyansah, S.Pd." } },
+            { day: "Selasa", jam_ke: "8", waktu: "12:30 - 13:10", kelas: { "X-1": "Syafaat, S.Pd.", "X-2": "Moh. Nasir, S.Pd.I.", "XI-1": "Nurul Istiqomah, S.Pd.", "XI-2": "Razali, S.Pd.I.", "XI-3": "Mutammimah, S.Pd.", "XII-A.1": "Kreislina Dewi Wijayanti, S.Pd.", "XII-S.1": "Angelia Ariani Dewi, S.Pd.", "XII-S.2": "Ahmad Fawaid Nuriyansah, S.Pd." } },
+            // Rabu
+            { day: "Rabu", jam_ke: "1", waktu: "07:30 - 08:10", kelas: { "X-1": "Ahmad Fauzi, S.Pd.", "X-2": "Saidi, S.Pd.I.", "XI-1": "Musthafa Lutfi, S.Pd.I.", "XI-2": "Insiyah, S.Pd.", "XI-3": "Nurul Istiqomah, S.Pd.", "XII-A.1": "Fajar, S.Pd.I.", "XII-S.1": "Dewi Rahmatul Fawaiz, SH", "XII-S.2": "Angelia Ariani Dewi, S.Pd." } },
+            { day: "Rabu", jam_ke: "2", waktu: "08:10 - 08:50", kelas: { "X-1": "Ahmad Fauzi, S.Pd.", "X-2": "Saidi, S.Pd.I.", "XI-1": "Fajar, S.Pd.I.", "XI-2": "Insiyah, S.Pd.", "XI-3": "Nurul Istiqomah, S.Pd.", "XII-A.1": "Kamarudin, S.Pd.", "XII-S.1": "Dewi Rahmatul Fawaiz, SH", "XII-S.2": "Angelia Ariani Dewi, S.Pd." } },
+            { day: "Rabu", jam_ke: "3", waktu: "08:50 - 09:30", kelas: { "X-1": "Syarif Hidayatullah F., S.Pd.", "X-2": "Shelvi Devita Ningrum, S.Pd.", "XI-1": "Fajar, S.Pd.I.", "XI-2": "Musthafa Lutfi, S.Pd.I.", "XI-3": "Nurul Istiqomah, S.Pd.", "XII-A.1": "Kamarudin, S.Pd.", "XII-S.1": "Dewi Rahmatul Fawaiz, SH", "XII-S.2": "Angelia Ariani Dewi, S.Pd." } },
+            { day: "Rabu", jam_ke: "4", waktu: "09:30 - 10:10", kelas: { "X-1": "Syarif Hidayatullah F., S.Pd.", "X-2": "Shelvi Devita Ningrum, S.Pd.", "XI-1": "Khoiril Bariyah, S.Pd.", "XI-2": "Kreislina Dewi Wijayanti, S.Pd.", "XI-3": "Fajar, S.Pd.I.", "XII-A.1": "Mutammimah, S.Pd.", "XII-S.1": "Angelia Ariani Dewi, S.Pd.", "XII-S.2": "Ladim, S.Pd." } },
+            { day: "Rabu", jam_ke: "5", waktu: "10:30 - 11:10", kelas: { "X-1": "Ahmad Fawaid Nuriyansah, S.Pd.", "X-2": "Shelvi Devita Ningrum, S.Pd.", "XI-1": "Khoiril Bariyah, S.Pd.", "XI-2": "Kreislina Dewi Wijayanti, S.Pd.", "XI-3": "Fajar, S.Pd.I.", "XII-A.1": "Mutammimah, S.Pd.", "XII-S.1": "Susi Ayu Sulistiyawati, S.Pd.", "XII-S.2": "Musthafa Lutfi, S.Pd.I." } },
+            { day: "Rabu", jam_ke: "6", waktu: "11:10 - 11:50", kelas: { "X-1": "Ahmad Fawaid Nuriyansah, S.Pd.", "X-2": "Ahmad Fawaid Nuriyansah, S.Pd.", "XI-1": "Khoiril Bariyah, S.Pd.", "XI-2": "Kreislina Dewi Wijayanti, S.Pd.", "XI-3": "Razali, S.Pd.I.", "XII-A.1": "Musthafa Lutfi, S.Pd.I.", "XII-S.1": "Susi Ayu Sulistiyawati, S.Pd.", "XII-S.2": "Fajar, S.Pd.I." } },
+            { day: "Rabu", jam_ke: "7", waktu: "11:50 - 12:30", kelas: { "X-1": "Ahmad Fawaid Nuriyansah, S.Pd.", "X-2": "Ahmad Fauzi, S.Pd.", "XI-1": "Insiyah, S.Pd.", "XI-2": "Mutammimah, S.Pd.", "XI-3": "Ahmad Fawaid Nuriyansah, S.Pd.", "XII-A.1": "Nur Eka Setiawati, S.Pd.I.", "XII-S.1": "Ladim, S.Pd.", "XII-S.2": "Fajar, S.Pd.I." } },
+            { day: "Rabu", jam_ke: "8", waktu: "12:30 - 13:10", kelas: { "X-1": "Musthafa Lutfi, S.Pd.I.", "X-2": "Ahmad Fauzi, S.Pd.", "XI-1": "Insiyah, S.Pd.", "XI-2": "Mutammimah, S.Pd.", "XI-3": "Ahmad Fawaid Nuriyansah, S.Pd.", "XII-A.1": "Nur Eka Setiawati, S.Pd.I.", "XII-S.1": "Ladim, S.Pd.", "XII-S.2": "Razali, S.Pd.I." } },
+            // Kamis
+            { day: "Kamis", jam_ke: "1", waktu: "07:30 - 08:10", kelas: { "X-1": "Nurul Istiqomah, S.Pd.", "X-2": "Dyah Ayu Kusuma Wardani, S.Pd.", "XI-1": "Fajar, S.Pd.I.", "XI-2": "Shelvi Devita Ningrum, S.Pd.", "XI-3": "Saidi, S.Pd.I.", "XII-A.1": "Angelia Ariani Dewi, S.Pd.", "XII-S.1": "Drs. H. AcH. Kandar", "XII-S.2": "Kamarudin, S.Pd." } },
+            { day: "Kamis", jam_ke: "2", waktu: "08:10 - 08:50", kelas: { "X-1": "Nurul Istiqomah, S.Pd.", "X-2": "Dyah Ayu Kusuma Wardani, S.Pd.", "XI-1": "Fajar, S.Pd.I.", "XI-2": "Shelvi Devita Ningrum, S.Pd.", "XI-3": "Saidi, S.Pd.I.", "XII-A.1": "Angelia Ariani Dewi, S.Pd.", "XII-S.1": "Drs. H. AcH. Kandar", "XII-S.2": "Kamarudin, S.Pd." } },
+            { day: "Kamis", jam_ke: "3", waktu: "08:50 - 09:30", kelas: { "X-1": "Kreislina Dewi Wijayanti, S.Pd.", "X-2": "Busro, S.Pd.", "XI-1": "Dyah Ayu Kusuma Wardani, S.Pd.", "XI-2": "Shelvi Devita Ningrum, S.Pd.", "XI-3": "Khoiril Bariyah, S.Pd.", "XII-A.1": "Nurul Istiqomah, S.Pd.", "XII-S.1": "Musthafa Lutfi, S.Pd.I.", "XII-S.2": "Drs. H. AcH. Kandar" } },
+            { day: "Kamis", jam_ke: "4", waktu: "09:30 - 10:10", kelas: { "X-1": "Kreislina Dewi Wijayanti, S.Pd.", "X-2": "Busro, S.Pd.", "XI-1": "Dyah Ayu Kusuma Wardani, S.Pd.", "XI-2": "Syarif Hidayatullah F., S.Pd.", "XI-3": "Khoiril Bariyah, S.Pd.", "XII-A.1": "Nurul Istiqomah, S.Pd.", "XII-S.1": "Fajar, S.Pd.I.", "XII-S.2": "Drs. H. AcH. Kandar" } },
+            { day: "Kamis", jam_ke: "5", waktu: "10:30 - 11:10", kelas: { "X-1": "Razali, S.Pd.I.", "X-2": "Busro, S.Pd.", "XI-1": "Dyah Ayu Kusuma Wardani, S.Pd.", "XI-2": "Syarif Hidayatullah F., S.Pd.", "XI-3": "Khoiril Bariyah, S.Pd.", "XII-A.1": "Saidi, S.Pd.I.", "XII-S.1": "Fajar, S.Pd.I.", "XII-S.2": "Nur Eka Setiawati, S.Pd.I." } },
+            { day: "Kamis", jam_ke: "6", waktu: "11:10 - 11:50", kelas: { "X-1": "Busro, S.Pd.", "X-2": "Khoiril Bariyah, S.Pd.", "XI-1": "Razali, S.Pd.I.", "XI-2": "Syarif Hidayatullah F., S.Pd.", "XI-3": "Insiyah, S.Pd.", "XII-A.1": "Saidi, S.Pd.I.", "XII-S.1": "Fajar, S.Pd.I.", "XII-S.2": "Nur Eka Setiawati, S.Pd.I." } },
+            { day: "Kamis", jam_ke: "7", waktu: "11:50 - 12:30", kelas: { "X-1": "Busro, S.Pd.", "X-2": "Khoiril Bariyah, S.Pd.", "XI-1": "Saidi, S.Pd.I.", "XI-2": "Mukhlas Fuadi, S.Sos.", "XI-3": "Insiyah, S.Pd.", "XII-A.1": "Dyah Ayu Kusuma Wardani, S.Pd.", "XII-S.1": "Kreislina Dewi Wijayanti, S.Pd.", "XII-S.2": "Mutammimah, S.Pd." } },
+            { day: "Kamis", jam_ke: "8", waktu: "12:30 - 13:10", kelas: { "X-1": "Busro, S.Pd.", "X-2": "Razali, S.Pd.I.", "XI-1": "Saidi, S.Pd.I.", "XI-2": "Mukhlas Fuadi, S.Sos.", "XI-3": "Musthafa Lutfi, S.Pd.I.", "XII-A.1": "Dyah Ayu Kusuma Wardani, S.Pd.", "XII-S.1": "Kreislina Dewi Wijayanti, S.Pd.", "XII-S.2": "Mutammimah, S.Pd." } },
+            // Sabtu
+            { day: "Sabtu", jam_ke: "1", waktu: "07:30 - 08:10", kelas: { "X-1": "Saidi, S.Pd.I.", "X-2": "Sudarisno Pratama, S.Pd.", "XI-1": "Nur Eka Setiawati, S.Pd.I.", "XI-2": "Dyah Ayu Kusuma Wardani, S.Pd.", "XI-3": "Fajar, S.Pd.I.", "XII-A.1": "Moh. Santoso, S.Pd.", "XII-S.1": "Hasan Basuni, S.Pd.I.", "XII-S.2": "Kamarudin, S.Pd." } },
+            { day: "Sabtu", jam_ke: "2", waktu: "08:10 - 08:50", kelas: { "X-1": "Saidi, S.Pd.I.", "X-2": "Sudarisno Pratama, S.Pd.", "XI-1": "Nur Eka Setiawati, S.Pd.I.", "XI-2": "Dyah Ayu Kusuma Wardani, S.Pd.", "XI-3": "Fajar, S.Pd.I.", "XII-A.1": "Moh. Santoso, S.Pd.", "XII-S.1": "Hasan Basuni, S.Pd.I.", "XII-S.2": "Kamarudin, S.Pd." } },
+            { day: "Sabtu", jam_ke: "3", waktu: "08:50 - 09:30", kelas: { "X-1": "Fajar, S.Pd.I.", "X-2": "Marzuki, S.Pd.", "XI-1": "Mastur, S.Pd.I.", "XI-2": "Dyah Ayu Kusuma Wardani, S.Pd.", "XI-3": "Ladim, S.Pd.", "XII-A.1": "Khoiril Bariyah, S.Pd.", "XII-S.1": "Kamarudin, S.Pd.", "XII-S.2": "Moh. Santoso, S.Pd." } },
+            { day: "Sabtu", jam_ke: "4", waktu: "09:30 - 10:10", kelas: { "X-1": "Dyah Ayu Kusuma Wardani, S.Pd.", "X-2": "Marzuki, S.Pd.", "XI-1": "Mastur, S.Pd.I.", "XI-2": "Fajar, S.Pd.I.", "XI-3": "Ladim, S.Pd.", "XII-A.1": "Khoiril Bariyah, S.Pd.", "XII-S.1": "Kamarudin, S.Pd.", "XII-S.2": "Moh. Santoso, S.Pd." } },
+            { day: "Sabtu", jam_ke: "5", waktu: "10:30 - 11:10", kelas: { "X-1": "Dyah Ayu Kusuma Wardani, S.Pd.", "X-2": "Mastur, S.Pd.I.", "XI-1": "Ahmad Fawaid Nuriyansah, S.Pd.", "XI-2": "Fajar, S.Pd.I.", "XI-3": "Ladim, S.Pd.", "XII-A.1": "Hasan Basuni, S.Pd.I.", "XII-S.1": "Saidi, S.Pd.I.", "XII-S.2": "Marzuki, S.Pd." } },
+            { day: "Sabtu", jam_ke: "6", waktu: "11:10 - 11:50", kelas: { "X-1": "Khoiril Bariyah, S.Pd.", "X-2": "Mastur, S.Pd.I.", "XI-1": "Ahmad Fawaid Nuriyansah, S.Pd.", "XI-2": "Ladim, S.Pd.", "XI-3": "Dyah Ayu Kusuma Wardani, S.Pd.", "XII-A.1": "Hasan Basuni, S.Pd.I.", "XII-S.1": "Saidi, S.Pd.I.", "XII-S.2": "Marzuki, S.Pd." } },
+            { day: "Sabtu", jam_ke: "7", waktu: "11:50 - 12:30", kelas: { "X-1": "Khoiril Bariyah, S.Pd.", "X-2": "Nur Eka Setiawati, S.Pd.I.", "XI-1": "Hasan Basuni, S.Pd.I.", "XI-2": "Ladim, S.Pd.", "XI-3": "Dyah Ayu Kusuma Wardani, S.Pd.", "XII-A.1": "Susi Ayu Sulistiyawati, S.Pd.", "XII-S.1": "Moh. Santoso, S.Pd.", "XII-S.2": "Saidi, S.Pd.I." } },
+            { day: "Sabtu", jam_ke: "8", waktu: "12:30 - 13:10", kelas: { "X-1": "Musthafa Lutfi, S.Pd.I.", "X-2": "Nur Eka Setiawati, S.Pd.I.", "XI-1": "Hasan Basuni, S.Pd.I.", "XI-2": "Ladim, S.Pd.", "XI-3": "Dyah Ayu Kusuma Wardani, S.Pd.", "XII-A.1": "Susi Ayu Sulistiyawati, S.Pd.", "XII-S.1": "Moh. Santoso, S.Pd.", "XII-S.2": "Saidi, S.Pd.I." } },
+            // Ahad
+            { day: "Ahad", jam_ke: "1", waktu: "07:30 - 08:10", kelas: { "X-1": "Suhaidi, S.Pd.I.", "X-2": "Insiyah, S.Pd.", "XI-1": "Kamarudin, S.Pd.", "XI-2": "Nur Eka Setiawati, S.Pd.I.", "XI-3": "Hasan Basuni, S.Pd.I.", "XII-A.1": "Ladim, S.Pd.", "XII-S.1": "Ahmad Fawaid Nuriyansah, S.Pd.", "XII-S.2": "Fajar, S.Pd.I." } },
+            { day: "Ahad", jam_ke: "2", waktu: "08:10 - 08:50", kelas: { "X-1": "Suhaidi, S.Pd.I.", "X-2": "Insiyah, S.Pd.", "XI-1": "Kamarudin, S.Pd.", "XI-2": "Nur Eka Setiawati, S.Pd.I.", "XI-3": "Hasan Basuni, S.Pd.I.", "XII-A.1": "Ladim, S.Pd.", "XII-S.1": "Ahmad Fawaid Nuriyansah, S.Pd.", "XII-S.2": "Fajar, S.Pd.I." } },
+            { day: "Ahad", jam_ke: "3", waktu: "08:50 - 09:30", kelas: { "X-1": "Suhaidi, S.Pd.I.", "X-2": "Insiyah, S.Pd.", "XI-1": "Kamarudin, S.Pd.", "XI-2": "Hj. Nur Aini, S.Ag.", "XI-3": "Mukhlas Fuadi, S.Sos.", "XII-A.1": "Fajar, S.Pd.I.", "XII-S.1": "Nur Eka Setiawati, S.Pd.I.", "XII-S.2": "Dyah Ayu Kusuma Wardani, S.Pd." } },
+            { day: "Ahad", jam_ke: "4", waktu: "09:30 - 10:10", kelas: { "X-1": "Insiyah, S.Pd.", "X-2": "Suhaidi, S.Pd.I.", "XI-1": "Ladim, S.Pd.", "XI-2": "Hj. Nur Aini, S.Ag.", "XI-3": "Mukhlas Fuadi, S.Sos.", "XII-A.1": "Fajar, S.Pd.I.", "XII-S.1": "Nur Eka Setiawati, S.Pd.I.", "XII-S.2": "Dyah Ayu Kusuma Wardani, S.Pd." } },
+            { day: "Ahad", jam_ke: "5", waktu: "10:30 - 11:10", kelas: { "X-1": "Insiyah, S.Pd.", "X-2": "Suhaidi, S.Pd.I.", "XI-1": "Ladim, S.Pd.", "XI-2": "Fajar, S.Pd.I.", "XI-3": "Hj. Nur Aini, S.Ag.", "XII-A.1": "Kamarudin, S.Pd.", "XII-S.1": "Dyah Ayu Kusuma Wardani, S.Pd.", "XII-S.2": "Hasan Basuni, S.Pd.I." } },
+            { day: "Ahad", jam_ke: "6", waktu: "11:10 - 11:50", kelas: { "X-1": "Insiyah, S.Pd.", "X-2": "Suhaidi, S.Pd.I.", "XI-1": "Ladim, S.Pd.", "XI-2": "Fajar, S.Pd.I.", "XI-3": "Hj. Nur Aini, S.Ag.", "XII-A.1": "Kamarudin, S.Pd.", "XII-S.1": "Dyah Ayu Kusuma Wardani, S.Pd.", "XII-S.2": "Hasan Basuni, S.Pd.I." } }
+        ];
+
+        // Referensi elemen DOM
+        const scheduleBody = document.querySelector('#scheduleBody');
+        const tableHeaderRow = document.getElementById('tableHeaderRow');
+        const filterGuruSelect = document.getElementById('filterGuru');
+        const filterKelasSelect = document.getElementById('filterKelas');
+        const filterHariSelect = document.getElementById('filterHari');
+        const filterJamKeSelect = document.getElementById('filterJamKe'); // 🔹 Tambahkan referensi
+        const noResultsMessage = document.getElementById('noResults');
+        const scheduleTable = document.getElementById('scheduleTable');
+        const scheduleSummary = document.getElementById('scheduleSummary');
+        const activeFiltersContainer = document.getElementById('activeFilters');
+        const totalResultsTextElement = document.getElementById('totalResultsText');
+        const resetFiltersBtn = document.getElementById('resetFilters');
+        const resetFiltersBtn2 = document.getElementById('resetFiltersBtn2');
+        const lastUpdatedElement = document.getElementById('lastUpdated');
+        const dayBadgesContainer = document.getElementById('dayBadgesContainer');
+
+        // Set tanggal terakhir diperbarui
+        lastUpdatedElement.textContent = new Date().toLocaleDateString('id-ID', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+
+        // Urutan hari
+        const daysOrder = ["Senin", "Selasa", "Rabu", "Kamis", "Sabtu", "Ahad"];
+
+        // Ambil guru unik
+        function getUniqueTeachers(data) {
+            const teachers = new Set();
+            data.forEach(item => {
+                Object.values(item.kelas).forEach(guru => {
+                    if (guru) teachers.add(guru);
+                });
+            });
+            return Array.from(teachers).sort((a, b) => a.localeCompare(b));
+        }
+
+        // Ambil kelas unik
+        function getUniqueClasses(data) {
+            const classes = new Set();
+            data.forEach(item => {
+                Object.keys(item.kelas).forEach(kelas => classes.add(kelas));
+            });
+            return Array.from(classes).sort((a, b) => {
+                const gradeOrder = { 'X': 0, 'XI': 1, 'XII': 2 };
+                const gradeA = a.match(/[A-Z]+/)[0];
+                const gradeB = b.match(/[A-Z]+/)[0];
+                if (gradeOrder[gradeA] !== gradeOrder[gradeB]) {
+                    return gradeOrder[gradeA] - gradeOrder[gradeB];
+                }
+                return a.replace(/[A-Z]+/g, '').localeCompare(b.replace(/[A-Z]+/g, ''), undefined, { numeric: true });
+            });
+        }
+
+        // Isi dropdown filter
+        function populateFilters() {
+            // Guru
+            const teachers = getUniqueTeachers(scheduleData);
+            teachers.forEach(guru => {
+                const option = document.createElement('option');
+                option.value = guru;
+                option.textContent = guru;
+                filterGuruSelect.appendChild(option);
+            });
+
+            // Kelas
+            const classes = getUniqueClasses(scheduleData);
+            classes.forEach(kelas => {
+                const option = document.createElement('option');
+                option.value = kelas;
+                option.textContent = kelas;
+                filterKelasSelect.appendChild(option);
+            });
+
+            // Jam Ke (1-8)
+            for (let i = 1; i <= 8; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = `Jam ${i}`;
+                filterJamKeSelect.appendChild(option);
+            }
+        }
+
+        // Update header tabel
+        function updateTableHeader(filteredMode) {
+            tableHeaderRow.innerHTML = '';
+            const headers = filteredMode
+                ? [
+                    { text: "Hari", icon: "far fa-calendar-alt" },
+                    { text: "Jam Ke", icon: "far fa-clock" },
+                    { text: "Waktu", icon: "fas fa-hourglass-half" },
+                    { text: "Nama Guru", icon: "fas fa-chalkboard-teacher" },
+                    { text: "Kelas", icon: "fas fa-users" }
+                ]
+                : [
+                    { text: "Hari", icon: "far fa-calendar-alt" },
+                    { text: "Jam Ke", icon: "far fa-clock" },
+                    { text: "Waktu", icon: "fas fa-hourglass-half" }
+                ].concat(getUniqueClasses(scheduleData).map(kelas => ({ text: kelas, icon: "" })));
+
+            headers.forEach(header => {
+                const th = document.createElement('th');
+                th.className = "px-6 py-3 text-left text-xs font-medium uppercase tracking-wider";
+                const div = document.createElement('div');
+                div.className = "flex items-center";
+                if (header.icon) {
+                    const icon = document.createElement('i');
+                    icon.className = `${header.icon} mr-2`;
+                    div.appendChild(icon);
+                }
+                const text = document.createElement('span');
+                text.textContent = header.text;
+                div.appendChild(text);
+                th.appendChild(div);
+                tableHeaderRow.appendChild(th);
+            });
+        }
+
+        // Buat badge filter aktif
+        function createActiveFilterBadge(type, value) {
+            const badge = document.createElement('div');
+            badge.className = "badge badge-primary flex items-center";
+            const iconMap = {
+                'Guru': 'fas fa-chalkboard-teacher',
+                'Kelas': 'fas fa-users',
+                'Hari': 'far fa-calendar-alt',
+                'Jam': 'far fa-clock'
+            };
+            const icon = document.createElement('i');
+            icon.className = `${iconMap[type]} mr-1`;
+            const text = document.createElement('span');
+            text.textContent = `${type}: ${value}`;
+            badge.appendChild(icon);
+            badge.appendChild(text);
+            return badge;
+        }
+
+        // Perbarui ringkasan filter
+        function updateActiveFiltersSummary(selectedGuru, selectedKelas, selectedHari, selectedJamKe) {
+            activeFiltersContainer.innerHTML = '';
+            const hasFilter = selectedGuru || selectedKelas || selectedHari || selectedJamKe;
+
+            if (selectedGuru) activeFiltersContainer.appendChild(createActiveFilterBadge('Guru', selectedGuru));
+            if (selectedKelas) activeFiltersContainer.appendChild(createActiveFilterBadge('Kelas', selectedKelas));
+            if (selectedHari) activeFiltersContainer.appendChild(createActiveFilterBadge('Hari', selectedHari));
+            if (selectedJamKe) activeFiltersContainer.appendChild(createActiveFilterBadge('Jam', `Jam ${selectedJamKe}`));
+
+            scheduleSummary.classList.toggle('hidden', !hasFilter);
+        }
+
+        // Merge cell
+        function mergeDuplicateCells(rows, columnIndex) {
+            if (rows.length === 0) return;
+            let previousValue = null;
+            let startIndex = -1;
+            for (let i = 0; i < rows.length; i++) {
+                const currentCell = rows[i].cells[columnIndex];
+                const currentValue = currentCell.textContent;
+                if (currentValue === previousValue) {
+                    currentCell.style.display = 'none';
+                    const currentRowSpan = rows[startIndex].cells[columnIndex].rowSpan || 1;
+                    rows[startIndex].cells[columnIndex].rowSpan = currentRowSpan + 1;
+                    if (i === rows.length - 1 || rows[i+1].cells[columnIndex].textContent !== currentValue) {
+                        rows[startIndex].cells[columnIndex].classList.remove('merged-cell-middle');
+                        rows[startIndex].cells[columnIndex].classList.add('merged-cell-bottom');
+                    } else {
+                        rows[startIndex].cells[columnIndex].classList.add('merged-cell-middle');
+                    }
+                } else {
+                    previousValue = currentValue;
+                    startIndex = i;
+                    currentCell.classList.add('merged-cell-top');
+                }
+            }
+            for (let i = 0; i < rows.length; i++) {
+                if (rows[i].cells[columnIndex].style.display !== 'none') {
+                    rows[i].cells[columnIndex].classList.add('merged-cell');
+                }
+            }
+        }
+
+        // Tampilkan jadwal
+        function displaySchedule(data) {
+            scheduleBody.innerHTML = '';
+            const selectedGuru = filterGuruSelect.value;
+            const selectedKelas = filterKelasSelect.value;
+            const selectedHari = filterHariSelect.value;
+            const selectedJamKe = filterJamKeSelect.value;
+
+            updateActiveFiltersSummary(selectedGuru, selectedKelas, selectedHari, selectedJamKe);
+
+            const filteredMode = selectedGuru || selectedKelas || selectedHari || selectedJamKe;
+            updateTableHeader(filteredMode);
+
+            const filteredData = [];
+            data.forEach(item => {
+                let rowShouldBeDisplayed = true;
+
+                if (selectedHari && item.day !== selectedHari) rowShouldBeDisplayed = false;
+                if (rowShouldBeDisplayed && selectedGuru) {
+                    let guruFound = false;
+                    for (const kelas in item.kelas) {
+                        if (item.kelas[kelas] === selectedGuru) {
+                            guruFound = true; break;
+                        }
+                    }
+                    if (!guruFound) rowShouldBeDisplayed = false;
+                }
+                if (rowShouldBeDisplayed && selectedKelas && !item.kelas[selectedKelas]) rowShouldBeDisplayed = false;
+                if (rowShouldBeDisplayed && selectedJamKe && item.jam_ke !== selectedJamKe) rowShouldBeDisplayed = false;
+
+                if (rowShouldBeDisplayed) {
+                    if (filteredMode) {
+                        if (selectedKelas) {
+                            const guru = item.kelas[selectedKelas] || '';
+                            if (!selectedGuru || guru === selectedGuru) {
+                                filteredData.push({ day: item.day, jam_ke: item.jam_ke, waktu: item.waktu, guru, kelas: selectedKelas });
+                            }
+                        } else if (selectedGuru) {
+                            for (const kelas in item.kelas) {
+                                if (item.kelas[kelas] === selectedGuru) {
+                                    filteredData.push({ day: item.day, jam_ke: item.jam_ke, waktu: item.waktu, guru: selectedGuru, kelas });
+                                }
+                            }
+                        } else {
+                            for (const kelas in item.kelas) {
+                                filteredData.push({ day: item.day, jam_ke: item.jam_ke, waktu: item.waktu, guru: item.kelas[kelas], kelas });
+                            }
+                        }
+                    } else {
+                        const row = scheduleBody.insertRow();
+                        row.className = "fade-in";
+                        const dayClassMap = { 'Senin': 'day-senin', 'Selasa': 'day-selasa', 'Rabu': 'day-rabu', 'Kamis': 'day-kamis', 'Sabtu': 'day-sabtu', 'Ahad': 'day-ahad' };
+                        row.classList.add(dayClassMap[item.day] || '');
+                        row.insertCell().textContent = item.day;
+                        row.insertCell().textContent = item.jam_ke;
+                        row.insertCell().textContent = item.waktu;
+                        getUniqueClasses(data).forEach(kelas => {
+                            const cell = row.insertCell();
+                            const guru = item.kelas[kelas] || '';
+                            if (guru) {
+                                const tooltip = document.createElement('div');
+                                tooltip.className = "tooltip";
+                                tooltip.innerHTML = `<span>${guru}</span><span class="tooltip-text">Kelas: ${kelas}<br>Hari: ${item.day}<br>Jam: ${item.waktu}</span>`;
+                                cell.appendChild(tooltip);
+                            }
+                        });
+                    }
+                }
+            });
+
+            if (filteredMode) {
+                filteredData.sort((a, b) => {
+                    if (daysOrder.indexOf(a.day) !== daysOrder.indexOf(b.day)) return daysOrder.indexOf(a.day) - daysOrder.indexOf(b.day);
+                    return parseInt(a.jam_ke) - parseInt(b.jam_ke);
+                });
+                filteredData.forEach(item => {
+                    const row = scheduleBody.insertRow();
+                    row.className = "fade-in";
+                    row.insertCell().textContent = item.day;
+                    row.insertCell().textContent = item.jam_ke;
+                    row.insertCell().textContent = item.waktu;
+                    row.insertCell().textContent = item.guru;
+                    row.insertCell().textContent = item.kelas;
+                });
+                const rows = scheduleBody.querySelectorAll('tr');
+                mergeDuplicateCells(Array.from(rows), 0);
+                mergeDuplicateCells(Array.from(rows), 1);
+                mergeDuplicateCells(Array.from(rows), 2);
+            }
+
+            const uniqueDays = Array.from(new Set(filteredData.map(i => i.day))).sort((a, b) => daysOrder.indexOf(a) - daysOrder.indexOf(b));
+            totalResultsTextElement.innerHTML = `<span class="font-bold text-indigo-700">${filteredData.length}</span> JTM`;
+            dayBadgesContainer.innerHTML = '';
+            uniqueDays.forEach(day => {
+                const badge = document.createElement('span');
+                badge.className = `clickable-day-badge ${day === selectedHari ? 'active' : ''}`;
+                badge.textContent = day;
+                badge.dataset.day = day;
+                dayBadgesContainer.appendChild(badge);
+            });
+
+            document.querySelectorAll('.clickable-day-badge').forEach(badge => {
+                badge.onclick = () => {
+                    filterHariSelect.value = filterHariSelect.value === badge.dataset.day ? "" : badge.dataset.day;
+                    displaySchedule(scheduleData);
+                };
+            });
+
+            const isEmpty = (filteredMode && filteredData.length === 0) || (!filteredMode && data.length === 0);
+            noResultsMessage.classList.toggle('hidden', !isEmpty);
+            scheduleTable.classList.toggle('hidden', isEmpty);
+            scheduleSummary.classList.toggle('hidden', isEmpty || !filteredMode);
+        }
+
+        // Reset filter
+        function resetFilters() {
+            filterGuruSelect.value = "";
+            filterKelasSelect.value = "";
+            filterHariSelect.value = "";
+            filterJamKeSelect.value = ""; // 🔹 Reset jam ke
+            displaySchedule(scheduleData);
+        }
+
+        // Event listeners
+        filterGuruSelect.addEventListener('change', () => displaySchedule(scheduleData));
+        filterKelasSelect.addEventListener('change', () => displaySchedule(scheduleData));
+        filterHariSelect.addEventListener('change', () => displaySchedule(scheduleData));
+        filterJamKeSelect.addEventListener('change', () => displaySchedule(scheduleData)); // 🔹 Tambahkan listener
+        resetFiltersBtn.addEventListener('click', resetFilters);
+        resetFiltersBtn2.addEventListener('click', resetFilters);
+
+        // Inisialisasi
+        document.addEventListener('DOMContentLoaded', () => {
+            populateFilters();
+            displaySchedule(scheduleData);
+        });
+    </script>
+</body>
+</html>
