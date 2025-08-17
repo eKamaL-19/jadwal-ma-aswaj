@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Generator Bookmarklet OTP</title>
+<style>
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #0d1117;
+    color: #e6edf3;
+    padding: 30px;
+  }
+  h2 {
+    font-size: 1.6rem;
+    color: #f1f5f9;
+	margin-top: -20px;
+    margin-bottom: -10px;
+    text-align: center;
+  }
+  p {
+    text-align: center;
+    margin-bottom: 10px;
+    color: #94a3b8;
+  }
+  .container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+    max-width: 1000px;
+    margin: auto;
+  }
+  .card {
+    background: #161b22;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+  }
+  h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #f8fafc;
+	text-align: center;
+
+  }
+  label {
+    display: block;
+    margin-top: 15px;
+    font-weight: 600;
+    color: #cbd5e1;
+  }
+  /* Perbaikan ukuran input */
+  input[type="text"], input[type="file"] {
+    width: 95%;
+    margin-top: 6px;
+    padding: 14px 12px;
+    border-radius: 10px;
+    border: 1px solid #2d3748;
+    background: #0f172a;
+    color: #e2e8f0;
+    outline: none;
+    font-size: 15px;
+  }
+
+  /* Biar tombol Choose File lebih rapi */
+  input[type="file"] {
+    padding: 10px;
+    background: #1e293b;
+    cursor: pointer;
+  }
+  button {
+    margin-top: 20px;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    border: none;
+    border-radius: 8px;
+    padding: 12px 20px;
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  button:hover {
+    transform: scale(1.05);
+    background: linear-gradient(135deg, #2563eb, #1e40af);
+  }
+  #otpPreview {
+    margin-top: 20px;
+    font-size: 32px;
+    font-weight: bold;
+    color: #22c55e;
+    text-align: center;
+    letter-spacing: 4px;
+    font-family: 'Courier New', monospace;
+  }
+  #timer {
+    text-align: center;
+    font-size: 14px;
+    color: #facc15;
+    margin-top: 5px;
+  }
+  #output {
+    display: none;
+    margin: 25px auto 0;
+    max-width: 1000px;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 20px;
+    border: 2px dashed #374151;
+    border-radius: 12px;
+    background: #0f172a;
+  }
+  #output h4 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-size: 1rem;
+    color: #f1f5f9;
+  }
+  textarea {
+    width: 100%;
+    max-width: 950px;
+    height: 140px;
+    border-radius: 10px;
+    padding: 12px;
+    margin-top: 10px;
+    font-family: monospace;
+    font-size: 14px;
+    border: 1px solid #2d3748;
+    background: #0d1117;
+    color: #f8fafc;
+    resize: vertical;
+    box-sizing: border-box;
+  }
+  a.bookmarklet {
+    display:inline-block;
+    padding:10px 14px;
+    margin-top: 10px;
+    background: linear-gradient(135deg, #16a34a, #15803d);
+    color:white;
+    border-radius:8px;
+    text-decoration:none;
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+  <h2>🔐 Generator Bookmarklet OTP</h2>
+  <p>Bookmarklet ini berfungsi untuk menghasilkan kode OTP sesuai secret yang Anda masukkan
+  <br>Unggah QR Code 2FA atau masukkan secret key. OTP ditampilkan real-time, lalu buat bookmarklet untuk login cepat.</p>
+
+  <div class="container">
+    <!-- Kolom kiri -->
+    <div class="card">
+      <h3>Sumber Akun</h3>
+      <label for="qrfile">Unggah QR Code</label>
+      <input type="file" id="qrfile" accept="image/*" onchange="scanQR(event)">
+
+      <label for="secret">Input Kode Secret</label>
+      <input type="text" id="secret" placeholder="masukkan Kode Secret disini" oninput="startPreview()">
+
+      <label for="bname">Nama Bookmarklet</label>
+      <input type="text" id="bname" placeholder="contoh: SSO_VervalPD">
+    </div>
+
+    <!-- Kolom kanan -->
+    <div class="card">
+      <h3>🔑 Pratinjau OTP</h3>
+      <div id="otpPreview">OTP: -</div>
+      <div id="timer">Sisa waktu: -</div>
+      <button onclick="generate()">Generate Bookmarklet</button>
+      <!-- hasil link bookmarklet ditaruh di sini -->
+      <div id="bookmarklet-link"></div>
+    </div>
+  </div>
+
+  <!-- Hasil kode bookmarklet -->
+  <div id="output">
+    <h4>KODE BOOKMARKLET</h4>
+    <textarea id="bookmarklet-code" readonly></textarea>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
+<script>
+let previewTimer;
+
+function scanQR(evt){
+  let file = evt.target.files[0];
+  if(!file) return;
+
+  let reader = new FileReader();
+  reader.onload = function(){
+    let img = new Image();
+    img.onload = function(){
+      let canvas = document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
+      let ctx = canvas.getContext("2d");
+      ctx.drawImage(img,0,0);
+      let imageData = ctx.getImageData(0,0,canvas.width,canvas.height);
+      let code = jsQR(imageData.data, canvas.width, canvas.height);
+      if(code){
+        let text = code.data;
+        if(text.startsWith("otpauth://totp/")){
+          let url = new URL(text);
+          let secret = url.searchParams.get("secret");
+          let label = decodeURIComponent(url.pathname.replace("/",""));
+          if(secret){
+            document.getElementById("secret").value = secret;
+            startPreview();
+          }
+          if(label){
+            document.getElementById("bname").value = label;
+          }
+          alert("✅ Secret ditemukan: " + secret + "\nAkun: " + label);
+        } else {
+          alert("QR bukan format otpauth://totp/");
+        }
+      } else {
+        alert("QR tidak terbaca, coba gambar lebih jelas.");
+      }
+    };
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function base32Decode(s){
+  let alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+  let str = s.toUpperCase().replace(/=+$/,"").replace(/\s+/g,"");
+  let bits = 0, value = 0, output = [];
+  for(let i=0;i<str.length;i++){
+    let idx = alphabet.indexOf(str[i]);
+    if(idx < 0) throw Error("Bad Base32");
+    value = (value << 5) | idx;
+    bits += 5;
+    if(bits >= 8){
+      output.push((value >>> (bits-8)) & 255);
+      bits -= 8;
+    }
+  }
+  return new Uint8Array(output);
+}
+
+function intToBuffer(num){
+  let buf = new ArrayBuffer(8);
+  let dv = new DataView(buf);
+  let high = Math.floor(num / Math.pow(2,32));
+  let low = num >>> 0;
+  dv.setUint32(0, high);
+  dv.setUint32(4, low);
+  return new Uint8Array(buf);
+}
+
+async function generateTOTP(secret, digits=6, step=30, algo="SHA-1"){
+  try {
+    let key = base32Decode(secret);
+    let counter = Math.floor(Date.now()/1000/step);
+    let msg = intToBuffer(counter);
+    let cryptoKey = await crypto.subtle.importKey("raw", key, {name:"HMAC", hash:{name:algo}}, false, ["sign"]);
+    let sig = new Uint8Array(await crypto.subtle.sign("HMAC", cryptoKey, msg));
+    let offset = sig[sig.length-1] & 15;
+    let otp = ((sig[offset]&127)<<24 | (sig[offset+1]&255)<<16 | (sig[offset+2]&255)<<8 | (sig[offset+3]&255)) % Math.pow(10,digits);
+    return otp.toString().padStart(digits,"0");
+  } catch(e){
+    return "-";
+  }
+}
+
+function startPreview(){
+  clearInterval(previewTimer);
+  let secret = document.getElementById("secret").value.trim();
+  if(!secret) {
+    document.getElementById("otpPreview").textContent = "OTP: -";
+    document.getElementById("timer").textContent = "Sisa waktu: -";
+    return;
+  }
+  async function update(){
+    let code = await generateTOTP(secret);
+    let epoch = Math.floor(Date.now()/1000);
+    let remain = 30 - (epoch % 30);
+    document.getElementById("otpPreview").textContent = "OTP: " + code;
+    document.getElementById("timer").textContent = "Sisa waktu: " + remain + " detik";
+  }
+  update();
+  previewTimer = setInterval(update,1000);
+}
+
+function generate(){
+  let secret = document.getElementById("secret").value.trim();
+  let bname = document.getElementById("bname").value.trim() || "TOTP";
+  if(!secret){ alert("Masukkan Secret Key!"); return; }
+
+  let code=`javascript:(function(){var secret="${secret}";function b32(s){for(var a="ABCDEFGHIJKLMNOPQRSTUVWXYZ234567",v=s.toUpperCase().replace(/=+$/,"").replace(/\\s+/g,""),n=0,b=0,o=[],i=0;i<v.length;i++){var p=a.indexOf(v[i]);if(p<0)throw Error("Bad Base32");b=(b<<5)|p;n+=5;if(n>=8){o.push((b>>>(n-8))&255);n-=8}}return new Uint8Array(o)}function buf(e){var t=new ArrayBuffer(8),d=new DataView(t),h=Math.floor(e/Math.pow(2,32)),l=e>>>0;d.setUint32(0,h);d.setUint32(4,l);return new Uint8Array(t)}function gen(k,d,step,alg){d=d||6;step=step||30;alg=alg||"SHA-1";var key=b32(k),T=Math.floor(Date.now()/1000/step),c=buf(T);return crypto.subtle.importKey("raw",key,{name:"HMAC",hash:{name:alg}},!1,["sign"]).then(x=>crypto.subtle.sign("HMAC",x,c)).then(sig=>{var u=new Uint8Array(sig),off=u[u.length-1]&15,num=((u[off]&127)<<24|(u[off+1]&255)<<16|(u[off+2]&255)<<8|(u[off+3]&255))%Math.pow(10,d);return num.toString().padStart(d,"0")})}function pick(){var sel="input#totp_code,input[name=totp],input[name=otp],input[name=code],input[name=token],input[name=authCode],input[name=auth_token],input[ng-model*=otp],input[ng-model*=token],input[placeholder*=OTP],input[maxlength='6']";var f=document.querySelector(sel);if(f)return f;var inputs=document.querySelectorAll("input");for(var i=0;i<inputs.length;i++){var el=inputs[i];var n=(el.name||"").toLowerCase(),id=(el.id||"").toLowerCase(),ph=(el.placeholder||"").toLowerCase();if(/otp|token|auth|code/.test(n+id+ph)){if(!el.type||el.type==="text"||el.type==="tel"||el.type==="number"){return el}}}return null}gen(secret).then(code=>{var f=pick();if(f){f.value=code;try{f.dispatchEvent(new Event("input",{bubbles:true}));f.dispatchEvent(new Event("change",{bubbles:true}));f.dispatchEvent(new Event("keyup",{bubbles:true}));if(window.angular&&angular.element){try{angular.element(f).val(code).triggerHandler("input")}catch(e){}}}catch(e){}}else{prompt("TOTP Code:",code)}}).catch(e=>alert("Error: "+e.message));})();`;
+
+
+	// buat link bookmarklet
+	let link = document.createElement("a");
+	link.textContent = bname;
+	link.href = code;
+	link.className = "bookmarklet";
+
+	// tampilkan ke halaman dengan posisi center
+	let container = document.getElementById("bookmarklet-link");
+	container.innerHTML = `<div style="text-align: center;"><p>👉 Bookmarklet:</p></div>`;
+	let wrapper = container.querySelector("div");
+	wrapper.appendChild(link);
+	wrapper.innerHTML += "<br><small>>>> Klik & tahan lalu seret ke Toolbar Browser <<<</small>";
+
+
+  // tampilkan juga kode text area
+  document.getElementById("output").style.display = "block";
+  document.getElementById("bookmarklet-code").value = code;
+}
+</script>
+</body>
+</html>
